@@ -13,6 +13,9 @@
 (function() {  // Out most scope
 
 var debug = false;
+var EN  = 1; 
+var JA  = 2;
+var ALL = 3;
 
 function logDebug(s) {
   if (!debug) {
@@ -100,6 +103,29 @@ if (current_hl == 'ja') {
 // Customize the top menu.
 //
 
+//judge search query includes only English words or not
+//If yes, search English pages, otherwise Japanese
+var check_query = function() {
+  var query = document.getElementById('gbqfq').value;
+  var lang = 0;
+
+  for (var i=0; i < query.length; i++) {
+    var char_code = query.charCodeAt(i)
+    if ( char_code < 0 || 255 < char_code ) {
+      lang = lang | JA;
+    }
+    else {
+      lang = lang | EN;
+    }
+    if ( lang === ALL ) {
+      break;
+    }
+  }
+  return lang 
+}
+
+
+
 var spans = document.getElementsByTagName('span');
 for (var i = 0; i < spans.length; i++) {
   var span = spans.item(i);
@@ -152,7 +178,7 @@ var add_radios = function() {
       '<input id="hl_en" name="engoogle_hl" value="en" type="radio"' + (current_hl == 'en' ? ' checked' : '') + '>' +
       '<label for="hl_en"> ' + en_if_cap + ' </label>';
 
-    var b = document.getElementById('center_col');
+    var b = document.getElementById('rhs');
     if (b) {
       var span = document.createElement('span');
       span.setAttribute('id', 'elgoogne');
@@ -342,10 +368,40 @@ var add_radios = function() {
       return false;
     };
     window.addEventListener('keypress', handler, true);
+
+    searchbtn = document.getElementById('gbqfb')
+    var handler_ = function() {
+      var query = document.getElementById('gbqfq').value;
+      var lang = check_query(query)
+      if ( lang === EN) {
+        new_tbs = 'lr:lang_1en';
+        new_lr = 'lang_en';
+    
+      }
+      else if (lang === JA){
+        new_tbs = 'lr:lang_1ja';
+        new_lr = 'lang_ja';
+    
+      }
+      else {
+        new_tbs = '';
+        new_lr = '';
+      } 
+      if (gs_hidden_lr) {
+        gs_hidden_lr.value = new_lr;
+      }
+      if (gs_hidden_tbs) {
+        gs_hidden_tbs.value = new_tbs;
+      }
+    } 
+    gs_elem.addEventListener('click', handler_, false);
   } else {
     logDebug("gbqf not found.");
   }
 };
+
+
+  
 
 window.addEventListener('hashchange', function() {
   add_radios();
